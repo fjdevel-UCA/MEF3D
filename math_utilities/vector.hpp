@@ -14,7 +14,7 @@ class Vector {
             create();
         }
         ~Vector(){
-            free(data);
+           free(data);
         }
 
         void init(){
@@ -48,7 +48,7 @@ class Vector {
                     neo_data[neo_index] = data[i];
                     neo_index++;
                 }
-            free(data);
+            // free(data);
             data = neo_data;
             size--;
         }

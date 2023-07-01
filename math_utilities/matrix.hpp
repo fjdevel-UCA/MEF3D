@@ -6,9 +6,9 @@ class Matrix {
         float** data;
 
         void create(){
-            data = (float**) malloc(sizeof(float*) * nrows);
+            data = new float*[nrows];
             for(int r = 0; r < nrows; r++)
-                data[r] = (float*) malloc(sizeof(float) * ncols);
+                data[r] = new float[ncols]();
         }
 
     public:
@@ -20,8 +20,8 @@ class Matrix {
         }
         ~Matrix(){
             for(int r = 0; r < nrows; r++)
-                free(data[r]);
-            free(data);
+                delete[] data[r];
+            delete[] data;
         }
 
         void init(){
@@ -53,38 +53,30 @@ class Matrix {
         }
 
         void remove_row(int row){
-            int neo_index = 0;
-            float** neo_data = (float**) malloc(sizeof(float*) * (nrows-1));
-            for(int i = 0; i < nrows; i++)
+            float** neo_data = new float*[nrows-1];
+            for(int i = 0, j = 0; i < nrows; i++)
                 if(i != row){
-                    neo_data[neo_index] = data[i];
-                    neo_index++;
+                    neo_data[j++] = data[i];
                 }
-            //printf("remove_row: %p - %p\n",data[row],data);
-            free(data[row]);
-            free(data);
+            delete[] data;
             data = neo_data;
             nrows--;
         }
 
         void remove_column(int col){
-            int neo_index = 0;
-            float** neo_data = (float**) malloc(sizeof(float*) * nrows);
+            float** neo_data = new float*[nrows];
             for(int r = 0; r < nrows; r++)
-                neo_data[r] = (float*) malloc(sizeof(float) * (ncols-1));
+                neo_data[r] = new float[ncols-1];
 
             for(int r = 0; r < nrows; r++){
-                for(int c = 0; c < ncols; c++)
+                for(int c = 0, j = 0; c < ncols; c++)
                     if(c != col){
-                        neo_data[r][neo_index] = data[r][c];
-                        neo_index++;
+                        neo_data[r][j++] = data[r][c];
                     }
-                neo_index = 0;
             }
-            //printf("remove_column: %p - %p\n",data[0],data);
             for(int r = 0; r < nrows; r++)
-                free(data[r]);
-            free(data);
+                delete[] data[r];
+            delete[] data;
             data = neo_data;
             ncols--;
         }

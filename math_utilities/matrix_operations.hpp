@@ -40,7 +40,8 @@ void product_matrix_by_matrix(Matrix* A, Matrix* B, Matrix* R){
 
 float determinant(Matrix* M);
 //determinant_auxiliar: Una función auxiliar para calcular el determinante de una matriz de tamaño mayor a 4x4. Usa la definición
- recursiva del determinante basada en los cofactores.
+ //recursiva del determinante basada en los cofactores.
+ 
 float determinant_auxiliar(Matrix* M) {
     int n = M->get_ncols();
     float acc = 0;

@@ -1,7 +1,7 @@
 #include "node.hpp"
 #include "element.hpp"
-#include "condition.hpp"
-
+//#include "condition.hpp"
+#include "max_heap.hpp"
 enum parameter {THERMAL_CONDUCTIVITY, HEAT_SOURCE};
 enum quantity {NUM_NODES, NUM_ELEMENTS, NUM_DIRICHLET, NUM_NEUMANN};
 //La clase Mesh se mantiene igual, solo necesitamos asegurarnos de que cuando creamos un Element, lo hacemos con 4 nodos para un tetraedro
@@ -11,7 +11,8 @@ class Mesh {
         int quantities[4];
         Node** nodes;
         Element** elements;
-        Condition** dirichlet_conditions;
+        /*Condition** dirichlet_conditions;*/
+        MaxHeap dirichlet_conditions;
         Condition** neumann_conditions;
 
     public:
@@ -20,7 +21,7 @@ class Mesh {
         ~Mesh(){
             free(nodes);
             free(elements);
-            free(dirichlet_conditions);
+            //free(dirichlet_conditions);
             free(neumann_conditions);
         }
 
@@ -45,7 +46,7 @@ class Mesh {
         void init_arrays(){
             nodes = (Node**) malloc(sizeof(Node*) * quantities[NUM_NODES]);
             elements = (Element**) malloc(sizeof(Element*) * quantities[NUM_ELEMENTS]);
-            dirichlet_conditions = (Condition**) malloc(sizeof(Condition*) * quantities[NUM_DIRICHLET]);
+            //dirichlet_conditions = (Condition**) malloc(sizeof(Condition*) * quantities[NUM_DIRICHLET]);
             neumann_conditions = (Condition**) malloc(sizeof(Condition*) * quantities[NUM_NEUMANN]);
         }
 
@@ -63,21 +64,40 @@ class Mesh {
             return elements[position];
         }
 
+        // void insert_dirichlet_condition(Condition* dirichlet_condition, int position){
+        //     dirichlet_conditions[position] = dirichlet_condition;
+        // }
         void insert_dirichlet_condition(Condition* dirichlet_condition, int position){
-            dirichlet_conditions[position] = dirichlet_condition;
+            dirichlet_conditions.insert(dirichlet_condition);
         }
+
+        // Condition* get_dirichlet_condition(int position){
+        //     return dirichlet_conditions[position];
+        // }
         Condition* get_dirichlet_condition(int position){
-            return dirichlet_conditions[position];
+            return dirichlet_conditions.extract_max();
         }
+
+        // bool does_node_have_dirichlet_condition(int id){
+        //     bool ans = false;
+        //     for(int i = 0; i < quantities[NUM_DIRICHLET]; i++)
+        //         if(dirichlet_conditions[i]->get_node()->get_ID() == id){
+        //             ans = true;
+        //             break;
+        //         }
+        //     return ans;
+        // }
         bool does_node_have_dirichlet_condition(int id){
-            bool ans = false;
-            for(int i = 0; i < quantities[NUM_DIRICHLET]; i++)
-                if(dirichlet_conditions[i]->get_node()->get_ID() == id){
-                    ans = true;
-                    break;
+            MaxHeap temp = dirichlet_conditions;
+            while (!temp.empty()) {
+                Condition* condition = temp.extract_max();
+                if (condition->get_node()->get_ID() == id) {
+                    return true;
                 }
-            return ans;
+            }
+            return false;
         }
+
 
         void insert_neumann_condition(Condition* neumann_condition, int position){
             neumann_conditions[position] = neumann_condition;
@@ -104,8 +124,12 @@ class Mesh {
                 cout << ", Node 2= " << elements[i]->get_node2()->get_ID() << ", Node 3= " << elements[i]->get_node3()->get_ID() << "\n";
             }
             cout << "\nList of Dirichlet boundary conditions\n**********************\n";
-            for(int i = 0; i < quantities[NUM_DIRICHLET]; i++)
-                cout << "Condition " << i+1 << ": " << dirichlet_conditions[i]->get_node()->get_ID() << ", Value= " << dirichlet_conditions[i]->get_value() << "\n";
+                MaxHeap temp = dirichlet_conditions;
+                int i = 1;
+                while (!temp.empty()) {
+                    Condition* condition = temp.extract_max();
+                    cout << "Condition " << i++ << ": " << condition->get_node()->get_ID() << ", Value= " << condition->get_value() << "\n";
+                }
             cout << "\nList of Neumann boundary conditions\n**********************\n";
             for(int i = 0; i < quantities[NUM_NEUMANN]; i++)
                 cout << "Condition " << i+1 << ": " << neumann_conditions[i]->get_node()->get_ID() << ", Value= " << neumann_conditions[i]->get_value() << "\n";
